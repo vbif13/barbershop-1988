@@ -2,6 +2,9 @@
 const CONTACTS = {
   whatsapp: "79136926343",          // номер без «+» и пробелов
   telegramUrl: "https://t.me/barbershop_1988",
+  // Ссылка на чат в MAX вида https://max.ru/u/... (из приложения: Профиль > Пригласить друзей). Пока пусто: кнопка копирует номер.
+  maxUrl: "",
+  maxPhone: "+7 913 692-63-43",
   dikidiUrl: "https://dikidi.net/1856321",   // онлайн-запись (из карточки 2ГИС)
   phone: "+79136926343",
   phoneLabel: "+7 913 692-63-43",
@@ -10,9 +13,11 @@ const CONTACTS = {
 
 const WA_URL = `https://wa.me/${CONTACTS.whatsapp}`;
 const TG_URL = CONTACTS.telegramUrl;
+const MX_URL = CONTACTS.maxUrl;
 
 const ICONS = {
   wa: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.6 2 2.17 6.43 2.17 11.87c0 1.74.46 3.44 1.32 4.94L2.1 22l5.33-1.4a9.86 9.86 0 0 0 4.61 1.17h.01c5.44 0 9.87-4.43 9.87-9.87 0-2.64-1.03-5.12-2.87-6.99zm-7.01 15.19h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.16.83.84-3.08-.2-.32a8.17 8.17 0 0 1-1.25-4.33c0-4.52 3.68-8.2 8.21-8.2 2.19 0 4.25.86 5.8 2.41a8.15 8.15 0 0 1 2.4 5.8c0 4.53-3.68 8.22-8.15 8.22zm4.5-6.15c-.25-.12-1.46-.72-1.69-.8-.23-.08-.39-.12-.56.12-.16.25-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.42h-.48c-.16 0-.43.06-.66.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.16 1.73 2.64 4.2 3.7.59.25 1.05.4 1.4.52.59.19 1.13.16 1.55.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>',
+  mx: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.5 2 2 6 2 11.2c0 2.8 1.3 5.3 3.5 7L5 22l3.9-1.9c1 .3 2 .4 3.1.4 5.5 0 10-4 10-9.2S17.5 2 12 2zm-4.1 12V8.6h1.2l2.9 3.7 2.9-3.7h1.2V14h-1.4v-3.2l-2.7 3.4-2.7-3.4V14z"/></svg>',
   tg: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.94 4.3 18.9 18.65c-.23 1.01-.83 1.26-1.68.79l-4.63-3.41-2.23 2.15c-.25.25-.45.45-.93.45l.33-4.71 8.58-7.75c.37-.33-.08-.52-.58-.18L7.25 12.67 2.68 11.24c-.99-.31-1.01-.99.21-1.47l17.86-6.88c.83-.31 1.55.19 1.19 1.41z"/></svg>',
 };
 
@@ -73,6 +78,7 @@ function renderChrome() {
             <ul>
               <li><a href="${WA_URL}" target="_blank" rel="noopener">WhatsApp</a></li>
               <li><a href="${TG_URL}" target="_blank" rel="noopener">Telegram</a></li>
+              <li><a data-mx-plain>MAX</a></li>
               <li><a href="${CONTACTS.dikidiUrl}" target="_blank" rel="noopener">Dikidi</a></li>
               ${CONTACTS.phones.map((p) => `<li><a href="tel:${p[0]}">${p[1]}</a></li>`).join("")}
             </ul>
@@ -93,6 +99,7 @@ function renderChrome() {
       <a class="float__book" href="${CONTACTS.dikidiUrl}" target="_blank" rel="noopener"><span data-i18n="btn.book"></span></a>
       <a href="${WA_URL}" target="_blank" rel="noopener" aria-label="WhatsApp">${ICONS.wa}<span class="float__label">WhatsApp</span></a>
       <a href="${TG_URL}" target="_blank" rel="noopener" aria-label="Telegram">${ICONS.tg}<span class="float__label">Telegram</span></a>
+      <a data-mx aria-label="MAX">${ICONS.mx}<span class="float__label">MAX</span></a>
     </div>`;
   }
 
@@ -106,6 +113,20 @@ function renderChrome() {
   document.querySelectorAll("[data-wa]").forEach((a) => {
     a.href = WA_URL; a.target = "_blank"; a.rel = "noopener";
     a.insertAdjacentHTML("afterbegin", ICONS.wa);
+  });
+  document.querySelectorAll("[data-mx], [data-mx-plain]").forEach((a) => {
+    if (a.hasAttribute("data-mx") && !a.querySelector("svg")) a.insertAdjacentHTML("afterbegin", ICONS.mx);
+    if (MX_URL) { a.href = MX_URL; a.target = "_blank"; a.rel = "noopener"; return; }
+    a.href = "#";
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      try { navigator.clipboard.writeText(CONTACTS.maxPhone); } catch (err) {}
+      const lab = a.querySelector(".float__label, span") || a;
+      const old = lab.textContent;
+      const dict = (window.B1988_I18N || {})[getLang()] || {};
+      lab.textContent = dict["max.copied"] || CONTACTS.maxPhone;
+      setTimeout(() => { lab.textContent = old; }, 2600);
+    });
   });
   document.querySelectorAll("[data-tg]").forEach((a) => {
     a.href = TG_URL; a.target = "_blank"; a.rel = "noopener";

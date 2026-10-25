@@ -514,7 +514,9 @@ body {
 /* кнопка «Записаться» — только на телефоне, главным действием слева */
 .float .float__book { display: none; }
 @media (max-width: 760px) {
-  .float { grid-template-columns: 1.3fr 1fr 1fr; }
+  .float { grid-template-columns: 1.25fr 1fr 1fr .8fr; }
+  .float a { gap: 6px; padding: 0 4px; }
+  .float a svg { width: 20px; height: 20px; flex: none; }
   .float .float__book { display: flex; background: var(--wood); color: var(--night); font-weight: 500; }
   .float .float__book:hover { background: var(--stone); }
   .float__label { font-size: 14px; }
